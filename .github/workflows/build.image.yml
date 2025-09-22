@@ -1,0 +1,143 @@
+name: Build Image
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      base:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: string
+      publish:
+        required: true
+        type: boolean
+      registry:
+        required: true
+        type: string
+      username:
+        required: true
+        type: string
+
+permissions:
+  packages: write
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  MAKEFLAGS: -s REGISTRY=${{ inputs.REGISTRY }} USER=${{ inputs.username }}
+
+
+jobs:
+
+
+  build_single_platform:
+
+    strategy:
+      matrix:
+        platform: ${{ fromJSON(inputs.platform) }}
+
+    name: ${{ matrix.platform }}
+
+    runs-on: ${{ matrix.platform == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          clean: false
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Set up buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ inputs.username }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download base image from artifacts
+        if: inputs.base
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.base }} ${{ matrix.platform }}
+
+      - name: Load base image
+        if: inputs.base
+        run: docker load -i '${{ inputs.base }} ${{ matrix.platform }}.tar'
+
+      - name: Build image
+        run: make -C docker/ubuntu ${{ inputs.image }}
+
+      - name: Publish image
+        if: ${{ inputs.publish && strategy.job-total == 1 }}
+        run: make -C docker/ubuntu ${{ inputs.image }}/push
+
+      - name: Save image
+        if: ${{ !inputs.publish || strategy.job-total != 1 }}
+        run: make -C docker/ubuntu ${{ inputs.image }}/save TAR='${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar'
+
+      - name: Upload image to artifacts
+        if: ${{ !inputs.publish || strategy.job-total != 1 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.id }} ${{ matrix.platform }}
+          path: ${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar
+          if-no-files-found: error
+          retention-days: 1
+
+    outputs:
+      is_multi_platform: ${{ strategy.job-total != 1 && 'true' || '' }}
+
+
+  build_multi_platform:
+
+    needs: build_single_platform
+    if: inputs.publish && needs.build_single_platform.outputs.is_multi_platform
+
+    name: multi-platform
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Install regctl
+        run: ./.ci/install_regctl.sh
+
+      - name: Log in to the registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ inputs.username }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download platform images from artifacts
+        uses: actions/download-artifact@v5
+        with:
+          pattern: ${{ inputs.id }} *
+          merge-multiple: true
+
+      - name: Aggregate & publish final image
+        run: |
+          set -x
+          command=(regctl index create)
+          for tar in *.tar; do
+            ocidir="ocidir://${tar%.tar}"
+            regctl image import "${ocidir}" "${tar}"
+            command+=(--ref "${ocidir}")
+          done
+          "${command[@]}" ${{ inputs.image }}
+
+
+# vim: foldmethod=marker foldlevel=0

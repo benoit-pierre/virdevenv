@@ -1,8 +1,9 @@
 VERSION = 1.0.1
 
-IMAGE_BASE    = ubuntu:jammy
-IMAGE_USER    = 0
-IMAGE_WORKDIR = /
+IMAGE_BASE     = ubuntu:jammy
+IMAGE_PLATFORM = amd64 arm64
+IMAGE_USER     = 0
+IMAGE_WORKDIR  = /
 
 define IMAGE_CMD
 [
