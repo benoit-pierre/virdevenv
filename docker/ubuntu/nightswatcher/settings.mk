@@ -1,6 +1,6 @@
 VERSION = 1.0.1
 
-IMAGE_BASE    = ubuntu:jammy
+IMAGE_BASE    = $(UBUNTU_IMAGE)
 IMAGE_USER    = 0
 IMAGE_WORKDIR = /
 
