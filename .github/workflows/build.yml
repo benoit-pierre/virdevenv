@@ -34,7 +34,6 @@ defaults:
 env:
   REGISTRY: &REGISTRY ghcr.io
   USERNAME: &USERNAME ${{ github.actor }}
-  KOTOOLS: &KOTOOLS ghcr.io/${{ github.actor }}/kotools:0.1.0-22.04
 
 
 jobs:
@@ -45,8 +44,6 @@ jobs:
 
     name: Lint
     runs-on: ubuntu-latest
-    container:
-      image: *KOTOOLS
 
     steps:
 
@@ -57,10 +54,12 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
-      - name: Install nightswatcher python dependencies
+      - name: Install dependencies
         run: |
+          set -x
+          ./docker/ubuntu/scripts/install_hadolint.sh
           ./docker/ubuntu/scripts/install_uv.sh
-          uv pip install --system -r ./docker/ubuntu/nightswatcher/requirements.txt
+          uv pip install --system pylint -r ./docker/ubuntu/nightswatcher/requirements.txt
 
       - name: Lint
         run: make -C docker/ubuntu lint -k -j$(nproc)
@@ -70,8 +69,6 @@ jobs:
 
     name: Prepare
     runs-on: ubuntu-latest
-    container:
-      image: *KOTOOLS
 
     steps:
 
@@ -81,6 +78,9 @@ jobs:
           clean: false
           fetch-depth: 1
           show-progress: false
+
+      - name: Install regctl
+        run: ./docker/ubuntu/scripts/install_regctl.sh
 
       - name: Log in to the registry
         if: github.event.inputs == null || !inputs.rebuild
@@ -153,6 +153,5 @@ jobs:
       platform: ${{ matrix.platform }}
       publish: ${{ fromJSON(needs.prepare.outputs.publish) }}
       # NOTE: can't use `${{ env.XXX }}` here…
-      kotools: *KOTOOLS
       registry: *REGISTRY
       username: *USERNAME

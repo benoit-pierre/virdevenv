@@ -18,9 +18,6 @@ on:
       publish:
         required: true
         type: boolean
-      kotools:
-        required: true
-        type: string
       registry:
         required: true
         type: string
@@ -110,8 +107,6 @@ jobs:
 
     name: multi-platform
     runs-on: ubuntu-latest
-    container:
-      image: ${{ inputs.kotools }}
 
     steps:
 
@@ -120,6 +115,9 @@ jobs:
         with:
           pattern: ${{ inputs.id }} *
           merge-multiple: true
+
+      - name: Install regctl
+        run: ./docker/ubuntu/scripts/install_regctl.sh
 
       - name: Log in to the registry
         if: strategy.job-total == 1 && inputs.publish
