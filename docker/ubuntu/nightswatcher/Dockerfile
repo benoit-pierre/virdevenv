@@ -2,7 +2,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install --no-install-recommends -y curl
+RUN apt-get install --no-install-recommends -y \
+    ca-certificates \
+    curl \
+    python3 \
+    wget \
+    ;
+RUN --mount=dst=/ctx /ctx/scripts/install_uv.sh
 
 # Install zsync.
 RUN apt-get install --no-install-recommends -y zsync
@@ -11,32 +17,27 @@ RUN apt-get install --no-install-recommends -y zsync
 ARG JDK_VER="17"
 RUN apt-get install --no-install-recommends -y openjdk-${JDK_VER}-jre-headless
 ARG UBER_APK_SIGNER_VER="1.3.0"
-RUN curl --location --output uber-apk-signer.jar https://github.com/patrickfav/uber-apk-signer/releases/download/v${UBER_APK_SIGNER_VER}/uber-apk-signer-${UBER_APK_SIGNER_VER}.jar
 RUN install -d /opt/uber-apk-signer
-RUN install -m644 uber-apk-signer.jar /opt/uber-apk-signer/
+RUN wget -nv -O /opt/uber-apk-signer/uber-apk-signer.jar https://github.com/patrickfav/uber-apk-signer/releases/download/v${UBER_APK_SIGNER_VER}/uber-apk-signer-${UBER_APK_SIGNER_VER}.jar
+RUN chmod 644 /opt/uber-apk-signer/uber-apk-signer.jar
+RUN ln -snf /opt/uber-apk-signer/uber-apk-signer /usr/local/bin/
 COPY --chmod=755 <<'EOF' /opt/uber-apk-signer/uber-apk-signer
 #!/bin/sh
 exec java -jar /opt/uber-apk-signer/uber-apk-signer.jar "$@"
 EOF
 
-RUN ln -snf /opt/uber-apk-signer/uber-apk-signer /usr/local/bin/
-RUN rm uber-apk-signer.jar
-
 # Install nightswatcher's other runtime dependencies.
 # FIXME: replace single `requests` use in nightswatcher by a call to curl.
-RUN apt-get install --no-install-recommends -y \
-    curl \
-    gunicorn \
-    python3-falcon \
-    python3-gevent \
-    python3-gunicorn \
-    python3-requests \
-    python3-ujson \
-    unzip \
-    ;
+RUN --mount=dst=/ctx uv pip install --system -r /ctx/nightswatcher/requirements.txt
 
 # And finally the nightswatcher' script itself.
 COPY --chmod=755 nightswatcher/nightswatcher.py /
 RUN mkdir -p /data/ota /data/release_download /metadata
+
+# Cleanup.
+RUN apt-get remove -y --auto-remove \
+    wget \
+    ;
+RUN rm /usr/local/bin/{uv,uvx}
 
 # vim: sw=4
