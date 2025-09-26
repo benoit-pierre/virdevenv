@@ -33,6 +33,7 @@ RUN regctl version
 RUN rm /usr/local/bin/ccache
 RUN rm /usr/local/bin/ninjatracing
 RUN pip uninstall -y meson
+RUN pip freeze
 RUN luarocks remove luacov-coveralls
 RUN luarocks remove luacov
 RUN luarocks remove datafile
