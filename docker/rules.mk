@@ -15,6 +15,7 @@ define DOCKERFILE
 # PRE {{{
 
 ARG BASE=scratch
+$(IMAGE_SEEDS)
 FROM $${BASE} AS build
 ARG USER WORKDIR
 $(IMAGE_PRE)
@@ -88,7 +89,7 @@ to_json_array = [$(patsubst %,"%"$(comma),$(wordlist 2,$(words $1),1 $1)) "$(las
 define image_rules
 $(eval IMAGE := $1)
 $(eval VERSION := )
-$(foreach v,BUILD_ARGS IMAGE_BASE IMAGE_CMD IMAGE_POST IMAGE_PRE IMAGE_SHELL IMAGE_USER IMAGE_WORKDIR,
+$(foreach v,BUILD_ARGS IMAGE_BASE IMAGE_CMD IMAGE_POST IMAGE_PRE IMAGE_SEEDS IMAGE_SHELL IMAGE_USER IMAGE_WORKDIR,
 $(eval $v := $$(DEFAULT_$v))
 )
 $(eval include $1/settings.mk)
