@@ -121,6 +121,7 @@ $1 $1/: build/$1.dockerfile
 	$(strip $(call image_build,$1)) $$< .
 
 $(call target_escape,ci-matrix/$(IMAGE)) ci-matrix/$1: $(call target_escape,ci-matrix/$(IMAGE_BASE))
+	@echo '$(IMAGE)' 1>&2
 	$(REGCTL) image digest $(IMAGE) 1>&2 || printf '%s' '{ "id": "$1 $(VERSION)", "image": "$(IMAGE)", "base": "$(IMAGE_BASE)", "platform": "$(subst ",\",$(subst $(empty) $(empty),,$(call to_json_array,$(IMAGE_PLATFORM))))" }, '
 
 $1/inspect:
