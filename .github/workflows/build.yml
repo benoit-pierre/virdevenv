@@ -101,6 +101,7 @@ jobs:
           make -s -C docker/ubuntu -j$(nproc) \
             ${{ github.event.inputs != null && inputs.nodeps && 'IMAGE_BASE=scratch' || '' }} \
             ${{ github.event.inputs != null && inputs.rebuild && 'REGCTL=false' || '' }} \
+            REGCTL=false \
             REGISTRY=${{ env.REGISTRY }} USER=${{ env.USERNAME }} \
             ${images[@]/#/ci-matrix/} | tee base_matrix
           sed -i 's/^/[ /;s/, $/ ]\n/' base_matrix; cat base_matrix

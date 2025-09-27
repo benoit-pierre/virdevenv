@@ -1,3 +1,4 @@
+ARG TARGETPLATFORM
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /
 RUN apt-get update
