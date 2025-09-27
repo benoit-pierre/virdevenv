@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -eo pipefail
+# shellcheck source=/dev/null
+. "${0%/*}/common.sh"
 
 [ $# -le 1 ]
 version="${1:-2.14.0}"
