@@ -98,7 +98,7 @@ jobs:
         run: |
           set -x
           images=(${{ inputs.images && inputs.images || '""' }})
-          make -s -C docker/ubuntu --output-sync --shuffle -j$(nproc) \
+          make -s -C docker/ubuntu --output-sync -j$(nproc) \
             ${{ github.event.inputs != null && inputs.nodeps && 'IMAGE_BASE=scratch' || '' }} \
             ${{ github.event.inputs != null && inputs.rebuild && 'REGCTL=false' || '' }} \
             REGISTRY=${{ env.REGISTRY }} USER=${{ env.USERNAME }} \
