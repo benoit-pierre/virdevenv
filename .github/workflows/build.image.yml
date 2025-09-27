@@ -80,7 +80,7 @@ jobs:
 
       - name: Publish image
         if: strategy.job-total == 1 && inputs.publish
-        # NOTE: clean platform to avoid docker warning…
+        # NOTE: clear platform to avoid a docker warning…
         run: make -C docker/ubuntu PLATFORM= ${{ inputs.image }}/push
 
       - name: Save image
@@ -120,7 +120,6 @@ jobs:
         run: ./docker/ubuntu/scripts/install_regctl.sh
 
       - name: Log in to the registry
-        if: strategy.job-total == 1 && inputs.publish
         env:
           PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: regctl registry login '${{ inputs.registry }}' --user '${{ inputs.username }}' --pass-stdin <<<"${PASSWORD}"

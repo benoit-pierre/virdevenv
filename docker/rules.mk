@@ -17,7 +17,6 @@ define DOCKERFILE
 # PRE {{{
 
 ARG BASE=scratch
-$(IMAGE_SEEDS)
 FROM $${BASE} AS build
 ARG USER WORKDIR
 $(IMAGE_PRE)
@@ -93,7 +92,7 @@ target_escape = $(subst :,\:,$1)
 
 define image_rules
 $(eval VERSION := )
-$(foreach v,BUILD_ARGS IMAGE_BASE IMAGE_CMD IMAGE_PLATFORM IMAGE_POST IMAGE_PRE IMAGE_SEEDS IMAGE_SHELL IMAGE_USER IMAGE_WORKDIR,
+$(foreach v,BUILD_ARGS IMAGE_BASE IMAGE_CMD IMAGE_PLATFORM IMAGE_POST IMAGE_PRE IMAGE_SHELL IMAGE_USER IMAGE_WORKDIR,
 $(eval $v := $$(DEFAULT_$v))
 )
 $(eval include $1/settings.mk)

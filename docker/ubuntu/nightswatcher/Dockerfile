@@ -1,6 +1,3 @@
-ARG TARGETPLATFORM
-ARG DEBIAN_FRONTEND=noninteractive
-WORKDIR /
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y \

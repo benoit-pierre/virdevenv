@@ -67,7 +67,7 @@ jobs:
           uv pip install --system pylint -r ./docker/ubuntu/nightswatcher/requirements.txt
 
       - name: Lint
-        run: make -C docker/ubuntu lint -k -j$(nproc)
+        run: make -C docker/ubuntu lint --output-sync -j$(nproc) -k
 
 
   prepare:
@@ -98,7 +98,7 @@ jobs:
         run: |
           set -x
           images=(${{ inputs.images && inputs.images || '""' }})
-          make -s -C docker/ubuntu -j$(nproc) \
+          make -s -C docker/ubuntu --output-sync --shuffle -j$(nproc) \
             ${{ github.event.inputs != null && inputs.nodeps && 'IMAGE_BASE=scratch' || '' }} \
             ${{ github.event.inputs != null && inputs.rebuild && 'REGCTL=false' || '' }} \
             REGCTL=false \
