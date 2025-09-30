@@ -20,7 +20,7 @@ on:
         type: boolean
     secrets:
       DOCKER_TOKEN:
-        required: true
+        # required: true
 
 defaults:
   run:

@@ -88,6 +88,7 @@ jobs:
           sed -i 's/^/[ /;s/, $/ ]\n/' base_matrix; cat base_matrix
           jq --color-output <base_matrix
           publish="${{ !!(github.event.inputs == null && github.ref == 'refs/heads/master' || inputs.publish) }}"
+          publish=true
           if [[ "${publish}" == 'true' ]]; then
             # Just strip `.base` members.
             jq <base_matrix >final_matrix '[ .[] | .base |= select(false) ]'
@@ -130,11 +131,11 @@ jobs:
     name: Build ${{ matrix.id }}
 
     uses: ./.github/workflows/build.image.yml
-    secrets:
-      # Yep, this is required to allow the use of the `docker` environment
-      # secret of the same name in the called workflow… Pretty evident,
-      # right? ¯\_(ツ)_/¯
-      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+    # secrets:
+    #   # Yep, this is required to allow the use of the `docker` environment
+    #   # secret of the same name in the called workflow… Pretty evident,
+    #   # right? ¯\_(ツ)_/¯
+    #   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
     with:
       id: ${{ matrix.id }}
       image: ${{ matrix.image }}

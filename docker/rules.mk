@@ -48,6 +48,7 @@ CMD $(or $(IMAGE_CMD),$(call to_json_array,$(IMAGE_SHELL)))
 endef
 
 IMAGES = $(patsubst %/,%,$(dir $(wildcard */Dockerfile)))
+IMAGES = nightswatcher
 IMAGE_IDS =
 BASE_IDS =
 
