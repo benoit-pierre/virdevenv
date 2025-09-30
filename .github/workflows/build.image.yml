@@ -45,6 +45,10 @@ jobs:
 
     steps:
 
+      - env:
+          PASSWORD: ${{ secrets.DOCKER_TOKEN }}
+        run: wc -c <<<"${PASSWORD}"
+
       - name: Checkout
         uses: actions/checkout@v5
         with:
