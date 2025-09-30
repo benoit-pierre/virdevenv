@@ -131,7 +131,8 @@ jobs:
     name: Build ${{ matrix.id }}
 
     uses: ./.github/workflows/build.image.yml
-    # secrets:
+    secrets:
+      DOCKER_TOKEN:
     #   # Yep, this is required to allow the use of the `docker` environment
     #   # secret of the same name in the called workflow… Pretty evident,
     #   # right? ¯\_(ツ)_/¯
