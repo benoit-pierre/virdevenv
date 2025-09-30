@@ -132,11 +132,11 @@ jobs:
 
     uses: ./.github/workflows/build.image.yml
     secrets:
-      DOCKER_TOKEN:
+      # DOCKER_TOKEN:
     #   # Yep, this is required to allow the use of the `docker` environment
     #   # secret of the same name in the called workflow… Pretty evident,
     #   # right? ¯\_(ツ)_/¯
-    #   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
     with:
       id: ${{ matrix.id }}
       image: ${{ matrix.image }}
