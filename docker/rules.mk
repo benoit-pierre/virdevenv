@@ -65,7 +65,7 @@ define image_build
 	--build-arg WORKDIR=$(IMAGE_WORKDIR)
 	$(patsubst %,--build-arg %,$(strip $(BUILD_ARGS)))
 	--tag $(IMAGE)
-	--output 'type=docker$(comma)oci-mediatypes=true$(if $(CI),$(comma)dest=$(or $(TAR),$1.tar)$(comma)compression=zstd$(comma)compression-level=19)'
+	--output type=docker
 	--progress plain
 	--file
 endef

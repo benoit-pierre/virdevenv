@@ -47,6 +47,7 @@ jobs:
 
     env:
       MAKEFLAGS: -s REGISTRY=${{ inputs.registry }} NAMESPACE=${{ inputs.namespace }} PLATFORM=${{ matrix.platform }}
+      TAR: ${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar
 
     steps:
 
@@ -56,9 +57,6 @@ jobs:
           clean: false
           fetch-depth: 1
           show-progress: false
-
-      - name: Setup builder
-        run: docker buildx create --use --name builder --driver docker-container
 
       - name: Download base image from artifacts
         if: inputs.base
@@ -71,13 +69,21 @@ jobs:
         run: docker load -i '${{ inputs.base }} ${{ matrix.platform }}.tar'
 
       - name: Build image
-        run: make -C docker/ubuntu ${{ inputs.image }} TAR='${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar'
+        run: make -C docker/ubuntu ${{ inputs.image }}
+
+      - name: Save image
+        run: make -C docker/ubuntu ${{ inputs.image }}/save
+
+      - name: Compress image layers
+        run: |
+          skopeo copy --dest-compress-format zstd "docker-archive:$TAR" "docker-archive:$TAR.tmp"
+          mv "$TAR.tmp" "$TAR"
 
       - name: Upload image to artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.id }} ${{ matrix.platform }}
-          path: ${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar
+          path: ${{ env.TAR }}
           if-no-files-found: error
           compression-level: 0
           retention-days: 1
