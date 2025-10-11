@@ -96,6 +96,7 @@ jobs:
           DOCKER_REGISTRY: *DOCKER_REGISTRY
           DOCKER_NAMESPACE: *DOCKER_NAMESPACE
         run: |
+          printf '::group::generate\n'
           set -x
           exec 2>&1 # avoid jumbled output…
           images=(${{ inputs.images && inputs.images || '""' }})
@@ -127,9 +128,11 @@ jobs:
                                     gsub("[/:]"; " ")) ]
               '
           fi
-          jq --color-output <final_matrix
           jq --compact-output <final_matrix | sed 's/^/matrix=/' | tee -a "${GITHUB_OUTPUT}"
           printf '%s=%s\n' publish "${publish:-false}" registry "${registry}" namespace "${namespace}" | tee -a "${GITHUB_OUTPUT}"
+          set +x
+          printf '::endgroup::\n'
+          jq --color-output <final_matrix
 
     outputs:
       matrix: ${{ steps.generate.outputs.matrix }}
