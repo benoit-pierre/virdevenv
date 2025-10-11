@@ -47,7 +47,6 @@ jobs:
 
     env:
       MAKEFLAGS: -s REGISTRY=${{ inputs.registry }} NAMESPACE=${{ inputs.namespace }} PLATFORM=${{ matrix.platform }}
-      TAR: ${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar
 
     steps:
 
@@ -72,9 +71,13 @@ jobs:
         run: make -C docker/ubuntu ${{ inputs.image }}
 
       - name: Save image
+        env:
+          TAR: &TAR ${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar
         run: make -C docker/ubuntu ${{ inputs.image }}/save
 
       - name: Compress image layers
+        env:
+          TAR: *TAR
         run: |
           skopeo copy --dest-compress-format zstd "docker-archive:$TAR" "docker-archive:$TAR.tmp"
           mv "$TAR.tmp" "$TAR"
@@ -83,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.id }} ${{ matrix.platform }}
-          path: ${{ env.TAR }}
+          path: *TAR
           if-no-files-found: error
           compression-level: 0
           retention-days: 1
