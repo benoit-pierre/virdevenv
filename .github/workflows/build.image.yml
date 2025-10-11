@@ -57,6 +57,9 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
+      - name: Setup builder
+        run: docker buildx create --use --name builder --driver docker-container
+
       - name: Download base image from artifacts
         if: inputs.base
         uses: actions/download-artifact@v5
@@ -68,10 +71,7 @@ jobs:
         run: docker load -i '${{ inputs.base }} ${{ matrix.platform }}.tar'
 
       - name: Build image
-        run: make -C docker/ubuntu ${{ inputs.image }}
-
-      - name: Save image
-        run: make -C docker/ubuntu ${{ inputs.image }}/save TAR='${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar'
+        run: make -C docker/ubuntu ${{ inputs.image }} TAR='${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar'
 
       - name: Upload image to artifacts
         uses: actions/upload-artifact@v4
@@ -79,6 +79,7 @@ jobs:
           name: ${{ inputs.id }} ${{ matrix.platform }}
           path: ${{ runner.temp }}/${{ inputs.id }} ${{ matrix.platform }}.tar
           if-no-files-found: error
+          compression-level: 0
           retention-days: 1
 
 
@@ -117,7 +118,7 @@ jobs:
       - name: Aggregate & publish final image
         run: |
           set -x
-          command=(regctl index create)
+          command=(regctl index create -v info)
           for tar in *.tar; do
             ocidir="ocidir://${tar%.tar}"
             regctl image import "${ocidir}" "${tar}"
