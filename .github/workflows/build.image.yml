@@ -79,10 +79,9 @@ jobs:
         env:
           TAR: *TAR
         run: |
-          set -x
           skopeo copy --dest-compress-format zstd "docker-archive:$TAR" "oci-archive:$TAR.tmp"
+          du -h "$TAR"* | sort -h
           mv "$TAR.tmp" "$TAR"
-          ls -lh "$TAR"*
 
       - name: Upload image to artifacts
         uses: actions/upload-artifact@v4
