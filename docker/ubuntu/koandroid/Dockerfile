@@ -1,5 +1,5 @@
 RUN apt-get -qq update
-RUN wget -nv https://github.com/koreader/koreader-base/raw/4e2c7afb94cb11c9eaa293c2285ed9950118077c/toolchain/Makefile
+RUN wget -nv https://github.com/koreader/koreader-base/raw/dd05b248a0c6edf4c6010be2ec44a36cef61d320/toolchain/Makefile
 
 # Install NDK.
 ARG NDK NDK_SUM
