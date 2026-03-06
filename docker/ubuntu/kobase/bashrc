@@ -4,10 +4,11 @@
 . /etc/bash_completion
 
 XTOOLS=/usr/local/x-tools
-
-for tc in "${XTOOLS}"/*/bin; do
-    export PATH=$tc:$PATH
-done
+if [[ -d "${XTOOLS}" ]]; then
+    for tc in "${XTOOLS}"/*/bin; do
+        export PATH="$tc:$PATH"
+    done
+fi
 
 export PATH="${HOME}/.local/bin:${PATH}"
 
